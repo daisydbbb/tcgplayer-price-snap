@@ -27,5 +27,6 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn
 COPY . .
 
 # Render sets $PORT at runtime; gunicorn's timeout is bumped up since a
-# scrape (especially batch mode) can take longer than the 30s default.
-CMD gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
+# scrape (especially batch mode) can take longer than the 30s default, and
+# a single scrape's page-load waits can now take up to ~90s worst case.
+CMD gunicorn app:app --bind 0.0.0.0:$PORT --timeout 180

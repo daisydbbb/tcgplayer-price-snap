@@ -135,11 +135,14 @@ def scrape_product(driver, url: str) -> tuple[str, str, list[Listing]]:
 
     # Wait for listing rows to render, then for their price fields to
     # actually populate (replaces a blind sleep with a real condition).
+    # 45s (not 20s) to give headroom on resource-constrained hosts (e.g.
+    # Render's free tier), which can render this JS-heavy page much slower
+    # than a local machine.
     try:
-        WebDriverWait(driver, 20).until(
+        WebDriverWait(driver, 45).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "section.listing-item"))
         )
-        WebDriverWait(driver, 20).until(
+        WebDriverWait(driver, 45).until(
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, ".listing-item__listing-data__info__price")
             )
