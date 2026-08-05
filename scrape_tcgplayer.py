@@ -105,6 +105,13 @@ def make_driver(headless: bool = True):
         options.add_argument("--headless=new")
     options.add_argument("--window-size=1400,2000")
     options.add_argument("--disable-blink-features=AutomationControlled")
+    # Required to launch Chrome as root inside a Docker container (e.g. on
+    # Render): the container's seccomp profile blocks the syscalls Chrome's
+    # sandbox needs, so without --no-sandbox the browser exits immediately
+    # with "session not created". --disable-dev-shm-usage avoids crashes
+    # from the container's small default /dev/shm size.
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument(
         "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
