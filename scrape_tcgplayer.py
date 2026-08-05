@@ -104,7 +104,9 @@ def make_driver(headless: bool = True):
     options = Options()
     if headless:
         options.add_argument("--headless=new")
-    options.add_argument("--window-size=1400,2000")
+    # Small viewport: we only read text out of the DOM, never take
+    # screenshots, so a large render surface just wastes memory.
+    options.add_argument("--window-size=1024,768")
     options.add_argument("--disable-blink-features=AutomationControlled")
     # Required to launch Chrome as root inside a Docker container (e.g. on
     # Render): the container's seccomp profile blocks the syscalls Chrome's
@@ -113,6 +115,19 @@ def make_driver(headless: bool = True):
     # from the container's small default /dev/shm size.
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    # Trim memory further: on hosts with a small RAM ceiling (e.g. Render's
+    # free 512MB tier), Chrome's baseline footprint alone can be enough to
+    # get OOM-killed, so drop everything we don't need for a text scrape.
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-background-networking")
+    options.add_argument("--disable-default-apps")
+    options.add_argument("--disable-sync")
+    options.add_argument("--disable-translate")
+    options.add_argument("--metrics-recording-only")
+    options.add_argument("--mute-audio")
+    options.add_argument("--no-first-run")
+    options.add_argument("--renderer-process-limit=1")
     options.add_argument(
         "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
