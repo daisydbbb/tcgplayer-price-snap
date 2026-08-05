@@ -1,5 +1,10 @@
 FROM python:3.11-slim
 
+# Force stdout/stderr to be unbuffered so print()s (e.g. our scrape
+# diagnostics) show up in Render's logs immediately instead of sitting in
+# a buffer that may never get flushed within a single request.
+ENV PYTHONUNBUFFERED=1
+
 # Install Google Chrome (stable) so Selenium has a real browser to drive.
 # Selenium 4.6+'s built-in Selenium Manager will auto-download a matching
 # chromedriver at runtime, so we don't need to install one separately.
