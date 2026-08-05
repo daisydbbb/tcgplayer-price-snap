@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor/OS cruft
+.DS_Store
+.vscode/
+
+# Scratch output from running the app locally
+snapped_*.csv
+snapped_*.xlsx
