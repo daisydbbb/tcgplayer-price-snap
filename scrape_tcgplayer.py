@@ -18,6 +18,7 @@ import sys
 from dataclasses import dataclass
 
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -134,14 +135,25 @@ def scrape_product(driver, url: str) -> tuple[str, str, list[Listing]]:
 
     # Wait for listing rows to render, then for their price fields to
     # actually populate (replaces a blind sleep with a real condition).
-    WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "section.listing-item"))
-    )
-    WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located(
-            (By.CSS_SELECTOR, ".listing-item__listing-data__info__price")
+    try:
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "section.listing-item"))
         )
-    )
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, ".listing-item__listing-data__info__price")
+            )
+        )
+    except TimeoutException:
+        # Diagnostics: print what the browser actually saw so a timeout
+        # caused by a bot-block/CAPTCHA page (common on cloud/datacenter
+        # IPs) is distinguishable from a genuinely slow or changed page.
+        # Shows up in the host's server logs (e.g. Render's Logs tab).
+        print(f"[scrape_product] TIMEOUT loading {url}")
+        print(f"[scrape_product] driver.title = {driver.title!r}")
+        print(f"[scrape_product] driver.current_url = {driver.current_url!r}")
+        print(f"[scrape_product] page_source[:1000] = {driver.page_source[:1000]!r}")
+        raise
 
     product_name = get_product_name(driver)
     number_rarity = get_number_rarity(driver)
